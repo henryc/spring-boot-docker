@@ -1,9 +1,21 @@
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.springframework.security.saml: DEBUG
+    org.opensaml.xmlsec: DEBUG
+
 spring:
   security:
     saml2:
       relyingparty:
         registration:
           samlexample:
+            acs:
+              location: "{baseUrl}/custom/{registrationId}"            #enable for localhost
+#              location: "https://{baseHost}/custom/{registrationId}"   #enable for AWS  
+#            entity-id: https://saml2exampleits.com                    #optional, enable for AWS
             signing:
               credentials:
                 - private-key-location: "classpath:credentials/private.key"
@@ -12,5 +24,4 @@ spring:
               singlesignon:
                 sign-request: false
               entity-id: https://samltest.id/saml/idp
-#              sso-url: http://localhost:8081/sample-idp/saml/idp/select
               metadata-uri: https://samltest.id/saml/idp

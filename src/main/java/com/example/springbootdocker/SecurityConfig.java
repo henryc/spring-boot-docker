@@ -14,7 +14,7 @@ import org.springframework.security.saml2.provider.service.web.Saml2MetadataFilt
 
 import javax.servlet.http.HttpServletRequest;
 
-import static org.springframework.security.config.Customizer.withDefaults;
+import java.io.IOException;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -25,19 +25,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        // add auto-generation of ServiceProvider Metadata
+    	// add auto-generation of ServiceProvider Metadata
+    	// default url: {baseUrl}/saml2/service-provider-metadata/{registrationId}
         Converter<HttpServletRequest, RelyingPartyRegistration> relyingPartyRegistrationResolver =
                 new DefaultRelyingPartyRegistrationResolver(relyingPartyRegistrationRepository);
 
+        //using new constructor method creates error (ambiguous contstructor)
         Saml2MetadataFilter filter = new Saml2MetadataFilter(
                 relyingPartyRegistrationResolver,
                 new OpenSamlMetadataResolver());
+        
 
         http
-            .saml2Login(withDefaults())
+        	.saml2Login(saml2 -> saml2.loginProcessingUrl("/custom/{registrationId}"))
             .addFilterBefore(filter, Saml2WebSsoAuthenticationFilter.class)
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers("/index/**").authenticated();
+                .antMatchers("/detail/**").authenticated();
+        
+        // by default, spring will create a basic logout page
+        http
+	        .logout()
+	        .addLogoutHandler((request, response, authentication) -> {
+	            try {
+					response.sendRedirect("/detail");	//logout page: set to main page or logout or login page
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+	        });
     }
 }
