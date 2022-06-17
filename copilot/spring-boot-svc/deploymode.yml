@@ -1,3 +1,0 @@
-application: spring-boot
-environment: test
-deploymentMode: pipeline
