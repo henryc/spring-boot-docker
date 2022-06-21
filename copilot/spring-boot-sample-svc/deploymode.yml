@@ -1,3 +1,0 @@
-application: spring-boot-docker
-environment: test
-deploymentMode: pipeline
