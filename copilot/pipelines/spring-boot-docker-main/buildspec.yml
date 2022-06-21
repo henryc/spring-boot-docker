@@ -10,9 +10,11 @@ phases:
       - wget -q https://ecs-cli-v2-release.s3.amazonaws.com/copilot-linux-v1.19.0
       - mv ./copilot-linux-v1.19.0 ./copilot-linux
       - chmod +x ./copilot-linux
+      - yum install -y nc
   build:
     commands:
-      - echo "Run your tests"
+      - echo "Testing port connectivity"
+      - nc -zv 172.16.92.73 1433
   post_build:
     commands:
       - ls -l
