@@ -1,0 +1,10 @@
+name: spring-boot-docker-main
+version: 1
+source:
+  provider: GitHub
+  properties:
+    branch: main
+    repository: https://github.com/henryc/spring-boot-docker
+    connection_name: henryc-github
+stages:
+  - name: test
