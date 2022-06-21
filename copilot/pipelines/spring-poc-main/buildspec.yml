@@ -1,0 +1,65 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      docker: 19
+      ruby: 2.6
+    commands:
+      - echo "cd into $CODEBUILD_SRC_DIR"
+      - cd $CODEBUILD_SRC_DIR
+      - wget -q https://ecs-cli-v2-release.s3.amazonaws.com/copilot-linux-v1.19.0
+      - mv ./copilot-linux-v1.19.0 ./copilot-linux
+      - chmod +x ./copilot-linux
+  build:
+    commands:
+      - echo "Run your tests"
+  post_build:
+    commands:
+      - ls -l
+      - export COLOR="false"
+      - pipeline=$(cat $CODEBUILD_SRC_DIR/copilot/pipelines/spring-poc-main/manifest.yml | ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))')
+      - pl_envs=$(echo $pipeline | jq -r '.stages[].name')
+      - |
+        for pl_env in $pl_envs; do
+          ./copilot-linux env upgrade -n $pl_env;
+        done;
+      - svc_ls_result=$(./copilot-linux svc ls --local --json)
+      - svc_list=$(echo $svc_ls_result | jq '.services')
+      - |
+        if [ ! "$svc_list" = null ]; then
+          svcs=$(echo $svc_ls_result | jq -r '.services[].name');
+        fi
+      - job_ls_result=$(./copilot-linux job ls --local --json)
+      - job_list=$(echo $job_ls_result | jq '.jobs')
+      - |
+        if [ ! "$job_list" = null ]; then
+          jobs=$(echo $job_ls_result | jq -r '.jobs[].name');
+        fi
+      - |
+        if [ "$svc_list" = null ] && [ "$job_list" = null ]; then
+          echo "No services or jobs found for the pipeline to deploy. Please create at least one service or job and push the manifest to the remote." 1>&2;
+          exit 1;
+        fi
+      - |
+        for env in $pl_envs; do
+          tag=$(sed 's/:/-/g' <<<"${CODEBUILD_BUILD_ID##*:}-${env}" | rev | cut -c 1-128 | rev)
+          for svc in $svcs; do
+          ./copilot-linux svc package -n $svc -e $env --output-dir './infrastructure' --tag $tag --upload-assets;
+          if [ $? -ne 0 ]; then
+            echo "Cloudformation stack and config files were not generated. Please check build logs to see if there was a manifest validation error." 1>&2;
+            exit 1;
+          fi
+          done;
+          for job in $jobs; do
+          ./copilot-linux job package -n $job -e $env --output-dir './infrastructure' --tag $tag --upload-assets;
+          if [ $? -ne 0 ]; then
+            echo "Cloudformation stack and config files were not generated. Please check build logs to see if there was a manifest validation error." 1>&2;
+            exit 1;
+          fi
+          done;
+        done;
+      - ls -lah ./infrastructure
+      - chmod +x bgd && ./bgd deploy spring-poc dev frontend spring-poc-main
+artifacts:
+  files:
+    - infrastructure/*

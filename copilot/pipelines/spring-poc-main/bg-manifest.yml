@@ -1,0 +1,5 @@
+TrafficRoutingConfig:
+  Type: TimeBasedCanary
+  TimeBasedCanary:
+    StepPercentage: 10
+    BakeTimeMins: 10
