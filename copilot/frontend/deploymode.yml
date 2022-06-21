@@ -1,3 +1,0 @@
-application: spring-poc
-environment: dev
-deploymentMode: pipeline
