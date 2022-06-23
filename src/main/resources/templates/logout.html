@@ -8,11 +8,6 @@
 	</head>
 	<body>
 		<h1>Secured Page</h1>
-		<p th:text="'Hello, ' + ${name} + '!'" />
-		<div>
-		    <form th:action="@{/logout}" method="post">
-		        <input type="submit" value="Logout" />
-		    </form>
-		</div>
+		<p th:text="'You have successfully logged out.'" />
 	</body>
 </html>

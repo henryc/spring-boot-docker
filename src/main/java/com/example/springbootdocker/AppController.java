@@ -10,10 +10,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class AppController {
 
 	@GetMapping("/detail")
-	public String hello(@AuthenticationPrincipal Saml2AuthenticatedPrincipal principal, Model model) {
-		Object uidObj = principal.getFirstAttribute("urn:oid:0.9.2342.19200300.100.1.1");		//uid
-		model.addAttribute("uid", String.valueOf(uidObj));
+	public String detail(@AuthenticationPrincipal Saml2AuthenticatedPrincipal principal, Model model) {
+		Object uidObj = principal.getFirstAttribute("urn:oid:2.16.840.1.113730.3.1.241");		//Display Name
+		model.addAttribute("name", String.valueOf(uidObj));
 		return "detail";
+	}
+	
+	@GetMapping("/user/logout")
+	public String logout(Model model) {
+		return "logout";
 	}
 
 }

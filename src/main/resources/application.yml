@@ -21,8 +21,19 @@ spring:
               credentials:
                 - private-key-location: "classpath:credentials/private.key"
                   certificate-location: "classpath:credentials/public.cer"
+            decryption:
+              credentials:
+                - private-key-location: "classpath:credentials/private.key"
+                  certificate-location: "classpath:credentials/public.cer"
             identityprovider:
+#              entity-id: https://samltest.id/saml/idp                            #samltest.id
+#              metadata-uri: https://samltest.id/saml/idp
+              entity-id: https://shbqa.ais.ucla.edu/idp/shibboleth                #ucla idp
+              metadata-uri: https://shbqa.ais.ucla.edu/shibboleth-idp/shibboleth  # metadata-uri or download IdP cert and refernce (see below)
               singlesignon:
-                sign-request: false
-              entity-id: https://samltest.id/saml/idp
-              metadata-uri: https://samltest.id/saml/idp
+                sign-request: true
+#                url: https://samltest.id/idp/profile/SAML2/Redirect/SSO
+#                url: https://shbqa.ais.ucla.edu/shibboleth-idp/profile/SAML2/Redirect/SSO
+#              verification:
+#                credentials:
+#                - certificate-location: "classpath:credentials/idp-cert-ucla.crt"
